@@ -8,6 +8,8 @@ import dronekit
 import exceptions
 import socket
 import time
+from pymavlink import mavutil
+import math
 
 def Iris_Connnect(pi_serial, pi_rate):
 
@@ -40,79 +42,116 @@ def Iris_Connnect(pi_serial, pi_rate):
 
     return Iris
 
-class Irismission(object):
+def arm_and_takeoff(vehicle, targetAlt = 1):
+    """
+    Arms vehicle and fly to a TargetAltitude.
+    """
 
-    def __init__(self, vehicle):
+    print("Pre-arm checks")
+    # Don't try to arm until autopilot is ready
+    while not vehicle.is_armable:
+        print(" Waiting for vehicle to initialise...")
+        time.sleep(1)
 
-        self.vehicle = vehicle
+    print("Arming motors")
+    # Copter should arm in GUIDED mode
+    vehicle.mode = dronekit.VehicleMode("GUIDED")
+    vehicle.armed   = True
 
-    def arm_and_takeoff(self, targetAlt = 1):
-        """
-        Arms vehicle and fly to a TargetAltitude.
-        """
+    # Confirm vehicle armed before attempting to take off
+    while not vehicle.armed:
+        print(" Waiting for arming...")
+        time.sleep(1)
 
-        print("Pre-arm checks")
-        # Don't try to arm until autopilot is ready
-        while not self.vehicle.is_armable:
-            print(" Waiting for vehicle to initialise...")
-            time.sleep(1)
+    print("Taking off!")
+    vehicle.simple_takeoff(targetAlt) # Take off to target altitude
 
-        print("Arming motors")
-        # Copter should arm in GUIDED mode
-        self.vehicle.mode    = dronekit.VehicleMode("GUIDED")
-        self.vehicle.armed   = True
+    # Wait until the vehicle reaches a safe height before processing the goto (otherwise the command
+    #  after Vehicle.simple_takeoff will execute immediately)
+    while True:
+        print(" Altitude: ", vehicle.location.global_relative_frame.alt)
+        #Break and return from function just below target altitude.
+        if vehicle.location.global_relative_frame.alt>=targetAlt*0.95:
+            print("Reached target altitude")
+            break
+        time.sleep(1)
 
-        # Confirm vehicle armed before attempting to take off
-        while not self.vehicle.armed:
-            print(" Waiting for arming...")
-            time.sleep(1)
 
-        print("Taking off!")
-        self.vehicle.simple_takeoff(targetAlt) # Take off to target altitude
+def goto_position_target_global_int(vehicle,aLocation):
+    """
+    Send SET_POSITION_TARGET_GLOBAL_INT command to request the vehicle fly to a specified LocationGlobal.
+    """
+    msg = vehicle.message_factory.set_position_target_global_int_encode(
+        0,       # time_boot_ms (not used)
+        0, 0,    # target system, target component
+        mavutil.mavlink.MAV_FRAME_GLOBAL_RELATIVE_ALT_INT, # frame
+        0b0000111111111000, # type_mask (only speeds enabled)
+        aLocation.lat*1e7, # lat_int - X Position in WGS84 frame in 1e7 * meters
+        aLocation.lon*1e7, # lon_int - Y Position in WGS84 frame in 1e7 * meters
+        aLocation.alt, # alt - Altitude in meters in AMSL altitude, not WGS84 if absolute or relative, above terrain if GLOBAL_TERRAIN_ALT_INT
+        0, # X velocity in NED frame in m/s
+        0, # Y velocity in NED frame in m/s
+        0, # Z velocity in NED frame in m/s
+        0, 0, 0, # afx, afy, afz acceleration (not supported yet, ignored in GCS_Mavlink)
+        0, 0)    # yaw, yaw_rate (not supported yet, ignored in GCS_Mavlink)
+    # send command to vehicle
+    vehicle.send_mavlink(msg)
 
-        # Wait until the vehicle reaches a safe height before processing the goto (otherwise the command
-        #  after Vehicle.simple_takeoff will execute immediately)
-        while True:
-            print(" Altitude: ", self.vehicle.location.global_relative_frame.alt)
-            #Break and return from function just below target altitude.
-            if self.vehicle.location.global_relative_frame.alt>=targetAlt*0.95:
-                print("Reached target altitude")
-                break
-            time.sleep(1)
+def goto_position_target_local_ned(vehicle,north, east, down):
+    """
+    Send SET_POSITION_TARGET_LOCAL_NED command to request the vehicle fly to a specified
+    location in the North, East, Down frame.
+    It is important to remember that in this frame, positive altitudes are entered as negative
+    "Down" values. So if down is "10", this will be 10 metres below the home altitude.
+    """
+    msg = vehicle.message_factory.set_position_target_local_ned_encode(
+        0,       # time_boot_ms (not used)
+        0, 0,    # target system, target component
+        mavutil.mavlink.MAV_FRAME_LOCAL_NED, # frame
+        0b0000111111111000, # type_mask (only positions enabled)
+        north, east, down, # x, y, z positions (or North, East, Down in the MAV_FRAME_BODY_NED frame
+        0, 0, 0, # x, y, z velocity in m/s  (not used)
+        0, 0, 0, # x, y, z acceleration (not supported yet, ignored in GCS_Mavlink)
+        0, 0)    # yaw, yaw_rate (not supported yet, ignored in GCS_Mavlink)
+    # send command to vehicle
+    vehicle.send_mavlink(msg)
 
-    def Go_to_Target(self, point, airspeed=2.0):
-        """
-        Iris go to a give point with specified airspeed.
-        """
-        self.vehicle.airspeed = airspeed
-        self.vehicle.simple_goto(point)
-        time.sleep(30)
+def get_location_metres(original_location, dNorth, dEast):
+    """
+    Returns a LocationGlobal object containing the latitude/longitude `dNorth` and `dEast` metres from the
+    specified `original_location`. The returned LocationGlobal has the same `alt` value
+    as `original_location`.
+    """
+    earth_radius = 6378137.0 #Radius of "spherical" earth
+    #Coordinate offsets in radians
+    dLat = dNorth/earth_radius
+    dLon = dEast/(earth_radius*math.cos(math.pi*original_location.lat/180))
 
-    def Check_list(self):
-        # vehicle is an instance of the Vehicle class
-        print("Autopilot Firmware version: %s" % self.vehicle.version)
-        print("Autopilot capabilities (supports ftp): %s" % self.vehicle.capabilities.ftp)
-        print("Global Location: %s" % self.vehicle.location.global_frame)
-        print("Global Location (relative altitude): %s" % self.vehicle.location.global_relative_frame)
-        print("Local Location: %s" % self.vehicle.location.local_frame)   #NED
-        print("Attitude: %s" % self.vehicle.attitude)
-        print("Velocity: %s" % self.vehicle.velocity)
-        print("GPS: %s" % self.vehicle.gps_0)
-        print("Groundspeed: %s" % self.vehicle.groundspeed)
-        print("Airspeed: %s" % self.vehicle.airspeed)
-        print("Battery: %s" % self.vehicle.battery)
-        #print("Rangefinder: %s" % self.vehicle.rangefinder)
-        #print("Rangefinder distance: %s" % self.vehicle.rangefinder.distance)
-        #print("Rangefinder voltage: %s" % self.vehicle.rangefinder.voltage)
-        print("Heading: %s" % self.vehicle.heading)
-        print("Is Armable?: %s" % self.vehicle.is_armable)
-        print("System status: %s" % self.vehicle.system_status.state)
-        print("Mode: %s" % self.vehicle.mode.name)    # settable
-        print("Armed: %s" % self.vehicle.armed)    # settable
+    #New position in decimal degrees
+    newlat = original_location.lat + (dLat * 180/math.pi)
+    newlon = original_location.lon + (dLon * 180/math.pi)
+    if type(original_location) is dronekit.LocationGlobal:
+        targetlocation=dronekit.LocationGlobal(newlat, newlon,original_location.alt)
+    elif type(original_location) is dronekit.LocationGlobalRelative:
+        targetlocation=dronekit.LocationGlobalRelative(newlat, newlon,original_location.alt)
+    else:
+        raise Exception("Invalid Location object passed")
 
-    def loop(self):
-        """Performs positioning and displays/exports the results."""
-        pass
+    return targetlocation;
+
+def goto(vehicle, dNorth, dEast,airspeed = 5):
+    """
+    Moves the vehicle to a position dNorth metres North and dEast metres East of the current position.
+    The method takes a function pointer argument with a single `dronekit.lib.LocationGlobal` parameter for
+    the target position. This allows it to be called with different position-setting commands.
+    By default it uses the standard method: dronekit.lib.Vehicle.simple_goto().
+    The method reports the distance to target every two seconds.
+    """
+    currentLocation = vehicle.location.global_relative_frame
+    targetLocation = get_location_metres(currentLocation, dNorth, dEast)
+    vehicle.groundspeed = airspeed
+    vehicle.simple_goto(targetLocation)
+
 
 if __name__ == "__main__":
 
@@ -121,12 +160,12 @@ if __name__ == "__main__":
 
     Iris_Vehicle = Iris_Connnect(pi_serial_addr,pi_serial_rate)
 
-    r = Irismission(Iris_Vehicle)
-    #Pre-flight checking
-    #r.Check_list()
     #Change to GUIDED mode and takeoff to target altitude
-    r.arm_and_takeoff(targetAlt = 10)
-    Iris_point1 = dronekit.LocationGlobalRelative(-35.361354, 149.165218,15)
-    r.Go_to_Target(Iris_point1)
+    arm_and_takeoff(Iris_Vehicle,targetAlt = 10)
+
+    i = 0;
     while True:
-        r.loop()
+        print("Relative Waypoint (North, East, Down)# ",i)
+        go_to_lo = input()
+        goto_position_target_local_ned(Iris_Vehicle,go_to_lo[0],go_to_lo[1],go_to_lo[2])
+        i +=1
