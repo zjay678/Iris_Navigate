@@ -144,13 +144,12 @@ def goto(vehicle, dNorth, dEast,airspeed = 5):
     Moves the vehicle to a position dNorth metres North and dEast metres East of the current position.
     The method takes a function pointer argument with a single `dronekit.lib.LocationGlobal` parameter for
     the target position. This allows it to be called with different position-setting commands.
-    By default it uses the standard method: dronekit.lib.Vehicle.simple_goto().
-    The method reports the distance to target every two seconds.
     """
     currentLocation = vehicle.location.global_relative_frame
     targetLocation = get_location_metres(currentLocation, dNorth, dEast)
-    vehicle.groundspeed = airspeed
-    vehicle.simple_goto(targetLocation)
+    vehicle.airspeed = airspeed
+    goto_position_target_global_int(vehicle,targetLocation)
+    #vehicle.simple_goto(targetLocation)
 
 
 if __name__ == "__main__":
@@ -162,7 +161,6 @@ if __name__ == "__main__":
 
     #Change to GUIDED mode and takeoff to target altitude
     arm_and_takeoff(Iris_Vehicle,targetAlt = 10)
-
     i = 0;
     while True:
         print("Relative Waypoint (North, East, Down)# ",i)
