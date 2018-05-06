@@ -17,13 +17,13 @@ def Iris_Connnect(pi_serial, pi_rate):
 
     try:
         """For Rasepberry pi """
-        #Iris = dronekit.connect(pi_serial, wait_ready=True, baud=pi_rate)
+        Iris = dronekit.connect(pi_serial, wait_ready=True, baud=pi_rate)
 
         """For debugging with DroneKit-sitl"""
         #Iris = dronekit.connect('tcp:127.0.0.1:5760',wait_ready=True)
 
         """For debugging with sim_vehicle"""
-        Iris = dronekit.connect('127.0.0.1:14550',wait_ready=True)
+        #Iris = dronekit.connect('127.0.0.1:14550',wait_ready=True)
     # Bad TCP connection
     except socket.error:
         print('No server exists!')
