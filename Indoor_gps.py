@@ -19,23 +19,11 @@ def send_fake_gps(vehicle,mocap_loca,mocap_vel):
     #gps_time = GpsSecondsFromPyUTC(time.time())
     #gps_week = gps_time/secsInWeek
 
-    msg = vehicle.message_factory.gps_input_encode(
-        0,  # timestamp
-        1,  # gps_id
-        8,  # ignore_flags
-        1209600407,#gps_time,  # gps_time
-        2000,#gps_week,  # gps week number
-        3,  # fix_type
+    msg = vehicle.message_factory.set_home_position_encode(
         mocap_loca[0]*1e7, # lat - X position in WGS84 frame in 1e7*meters
         mocap_loca[1]*1e7, # lon_int - Y Position in WGS84 frame in 1e7 * meters
         mocap_loca[2]*1000, # alt - Altitude in meters in AMSL altitude, not WGS84 if absolute or relative, above terrain if GLOBAL_TERRAIN_ALT_INT
-        0.02,
-        0.02,
-        mocap_vel[0], # X velocity in NED frame in m/s
-        mocap_vel[1], # Y velocity in NED frame in m/s
-        mocap_vel[2], # Z velocity in NED frame in m/s
-        1, 5, 3, # vert_accuracy
-        10) # satellite_visible
+        0,0,0,[1.0,0,0,0],0,0,0) # satellite_visible
     # send command to vehicle
     vehicle.send_mavlink(msg)
 
