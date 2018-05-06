@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 """
 This is for Discover lab Iris+ Drone Indoor GPS with Optitrack
 Author: Zone Shi
@@ -44,16 +43,17 @@ if __name__ == "__main__":
 
     pi_serial = '/dev/ttyAMA0'
     pi_rate = 115200
-    mocap_loca.lat = 41.698363326621
-    mocap_loca.lon = -86.23395438304738
-    mocap_loca.alt = 100
+    #mocap_loca.lat = 41.698363326621
+    #mocap_loca.lon = -86.23395438304738
+    #mocap_loca.alt = 100
 
-    mocap_vel.velx = 0
-    mocap_vel.vely = 0
-    mocap_vel.velz = 0
+    #mocap_vel.velx = 0
+    #mocap_vel.vely = 0
+    #mocap_vel.velz = 0
     """For Rasepberry pi """
-    Iris = dronekit.connect(pi_serial, wait_ready=True, baud=pi_rate)
+    #Iris = dronekit.connect(pi_serial, wait_ready=True, baud=pi_rate)
 
     while True:
-        send_fake_gps(Iris,mocap_loca,mocap_vel)
+        #send_fake_gps(Iris,mocap_loca,mocap_vel)
+        print(GpsSecondsFromPyUTC(time.time()))
         time.sleep(0.2)
