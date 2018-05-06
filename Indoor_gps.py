@@ -56,26 +56,7 @@ def send_fake_gps(vehicle,mocap_loca,mocap_vel):
     vert_accuracy = 0.1
     satellites_visible = 6
 
-    # msg = vehicle.message_factory.gps_input_encode(time_usec,gps_id,ignore_flags,
-    # time_week_ms,time_week,fix_type,
-    # lat,lon,alt,
-    # hdop,vdop,
-    # vn,ve,vd,
-    # speed_accuracy,
-    # horiz_accuracy,
-    # vert_accuracy,
-    # satellites_visible)
-    # # send command to vehicle
-    # vehicle.send_mavlink(msg)
-    vehicle.message_factory.gps_input_send(time_usec,gps_id,ignore_flags,
-    time_week_ms,time_week,fix_type,
-    lat,lon,alt,
-    hdop,vdop,
-    vn,ve,vd,
-    speed_accuracy,
-    horiz_accuracy,
-    vert_accuracy,
-    satellites_visible)
+    vehicle.message_factory.gps_input_send(time_usec,gps_id,ignore_flags,time_week_ms,time_week,fix_type,lat,lon,alt,hdop,vdop,vn,ve,vd,speed_accuracy,horiz_accuracy,vert_accuracy,satellites_visible)
 
 if __name__ == "__main__":
 
