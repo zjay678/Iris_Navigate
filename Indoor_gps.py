@@ -9,7 +9,8 @@ BRD_SER2_RTSCTS,  0    <-- turn off flow control
 EK2_GPS_TYPE,     2    <-- only use 2D
 """
 import dronekit
-from glue.gpstime import GpsSecondsFromPyUTC, secsInWeek
+#from gwpy.time import to_gps
+from datetime import datetime
 import time
 
 
@@ -40,8 +41,9 @@ def send_fake_gps(vehicle,mocap_loca,mocap_vel):
     time_usec = 0
     gps_id = 1
     ignore_flags = 32
-    time_week_ms = GpsSecondsFromPyUTC(time.time())
-    time_week = gps_time/secsInWeek
+    secsperweek = 604800
+    time_week_ms = int((datetime.now()-datetime(1980,1,6))..total_seconds())#to_gps('now')
+    time_week = time_week_ms/secsperweek
     fix_type = 3
     lat = mocap_loca[0]*1e7
     lon = mocap_loca[1]*1e7
