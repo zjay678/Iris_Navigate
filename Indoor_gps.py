@@ -43,7 +43,7 @@ def send_fake_gps(vehicle,mocap_loca,mocap_vel):
 if __name__ == "__main__":
 
     pi_serial = '/dev/ttyAMA0'
-    pi_rate = 57600
+    pi_rate = 115200
     mocap_loca.lat = 41.698363326621
     mocap_loca.lon = -86.23395438304738
     mocap_loca.alt = 100
@@ -52,13 +52,8 @@ if __name__ == "__main__":
     mocap_vel.vely = 0
     mocap_vel.velz = 0
     """For Rasepberry pi """
-    #Iris = dronekit.connect(pi_serial, wait_ready=True, baud=pi_rate)
+    Iris = dronekit.connect(pi_serial, wait_ready=True, baud=pi_rate)
 
-    """For debugging with DroneKit-sitl"""
-    #Iris = dronekit.connect('tcp:127.0.0.1:5760',wait_ready=True)
-
-    """For debugging with sim_vehicle"""
-    #Iris = dronekit.connect('127.0.0.1:14550',wait_ready=True)
     while True:
-        send_fake_gps(vehicle,mocap_loca,mocap_vel)
+        send_fake_gps(Iris,mocap_loca,mocap_vel)
         time.sleep(0.2)
