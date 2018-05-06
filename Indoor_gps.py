@@ -42,7 +42,7 @@ def send_fake_gps(vehicle,mocap_loca,mocap_vel):
 if __name__ == "__main__":
 
     pi_serial = '/dev/ttyAMA0'
-    pi_rate = 115200
+    pi_rate = 57600
     #mocap_loca.lat = 41.698363326621
     #mocap_loca.lon = -86.23395438304738
     #mocap_loca.alt = 100
