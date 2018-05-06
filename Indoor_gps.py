@@ -90,5 +90,6 @@ if __name__ == "__main__":
 
     while True:
         send_fake_gps(Iris,mocap_loca,mocap_vel)
+        print("Position Send! \n")
         #print(GpsSecondsFromPyUTC(time.time())/secsInWeek)
         time.sleep(0.2)
