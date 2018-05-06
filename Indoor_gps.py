@@ -9,31 +9,31 @@ BRD_SER2_RTSCTS,  0    <-- turn off flow control
 EK2_GPS_TYPE,     2    <-- only use 2D
 """
 import dronekit
-from glue.gpstime import GpsSecondsFromPyUTC,secsInWeek
+#from glue.gpstime import GpsSecondsFromPyUTC,secsInWeek
 import time
 
 def send_fake_gps(vehicle,mocap_loca,mocap_vel):
     """
     Send SET_POSITION_TARGET_GLOBAL_INT command to request the vehicle fly to a specified LocationGlobal.
     """
-    gps_time = GpsSecondsFromPyUTC(time.time())
-    gps_week = gps_time/secsInWeek
+    #gps_time = GpsSecondsFromPyUTC(time.time())
+    #gps_week = gps_time/secsInWeek
 
     msg = vehicle.message_factory.gps_input_encode(
         0,  # timestamp
         1,  # gps_id
-        1,  # ignore_flags
-        gps_time,  # gps_time
-        gps_week,  # gps week number
+        8,  # ignore_flags
+        1209600407,#gps_time,  # gps_time
+        2000,#gps_week,  # gps week number
         3,  # fix_type
-        mocap_loca.lat*1e7, # lat - X position in WGS84 frame in 1e7*meters
-        mocap_loca.lon*1e7, # lon_int - Y Position in WGS84 frame in 1e7 * meters
-        mocap_loca.alt*1000, # alt - Altitude in meters in AMSL altitude, not WGS84 if absolute or relative, above terrain if GLOBAL_TERRAIN_ALT_INT
+        mocap_loca[0]*1e7, # lat - X position in WGS84 frame in 1e7*meters
+        mocap_loca[1]*1e7, # lon_int - Y Position in WGS84 frame in 1e7 * meters
+        mocap_loca[2]*1000, # alt - Altitude in meters in AMSL altitude, not WGS84 if absolute or relative, above terrain if GLOBAL_TERRAIN_ALT_INT
         0.02,
         0.02,
-        mocap_vel.velx, # X velocity in NED frame in m/s
-        mocap_vel.vely, # Y velocity in NED frame in m/s
-        mocap_vel.velz, # Z velocity in NED frame in m/s
+        mocap_vel[0], # X velocity in NED frame in m/s
+        mocap_vel[1], # Y velocity in NED frame in m/s
+        mocap_vel[2], # Z velocity in NED frame in m/s
         1, 5, 3, # vert_accuracy
         10) # satellite_visible
     # send command to vehicle
@@ -46,14 +46,15 @@ if __name__ == "__main__":
     #mocap_loca.lat = 41.698363326621
     #mocap_loca.lon = -86.23395438304738
     #mocap_loca.alt = 100
-
+    mocap_loca = [41.698363326621,-86.23395438304738,100]
+    mocap_vel = [0,0,0]
     #mocap_vel.velx = 0
     #mocap_vel.vely = 0
     #mocap_vel.velz = 0
     """For Rasepberry pi """
-    #Iris = dronekit.connect(pi_serial, wait_ready=True, baud=pi_rate)
+    Iris = dronekit.connect(pi_serial, wait_ready=True, baud=pi_rate)
 
     while True:
-        #send_fake_gps(Iris,mocap_loca,mocap_vel)
-        print(GpsSecondsFromPyUTC(time.time()))
+        send_fake_gps(Iris,mocap_loca,mocap_vel)
+        #print(GpsSecondsFromPyUTC(time.time())/secsInWeek)
         time.sleep(0.2)
