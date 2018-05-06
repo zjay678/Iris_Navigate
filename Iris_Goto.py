@@ -62,7 +62,7 @@ def arm_and_takeoff(vehicle, targetAlt = 1):
         print(" Waiting for arming...")
         time.sleep(1)
 
-    vehicle.mode = dronekit.VehicleMode("GUIDED NO GPS")
+    vehicle.mode = dronekit.VehicleMode("GUIDED")
 
     print("Taking off!")
     vehicle.simple_takeoff(targetAlt) # Take off to target altitude
