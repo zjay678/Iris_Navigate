@@ -39,7 +39,7 @@ def send_fake_gps(vehicle,mocap_loca,mocap_vel):
     '''
     time_usec = 0
     gps_id = 1
-    ignore_flags =
+    ignore_flags = 32
     time_week_ms = gpstime.GpsSecondsFromPyUTC(time.time())
     time_week = gps_time/gpstime.secsInWeek
     fix_type = 3
