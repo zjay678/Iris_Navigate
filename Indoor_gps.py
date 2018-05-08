@@ -47,7 +47,7 @@ def send_fake_gps(vehicle,mocap_loca,mocap_vel):
     '''
     time_usec = 0
     gps_id = 1
-    ignore_flags = 32
+    ignore_flags = 62
     secsperweek = 604800
     time_week_ms = int((datetime.now()-datetime(1980,1,6)).total_seconds())#to_gps('now')
     time_week = time_week_ms/secsperweek
