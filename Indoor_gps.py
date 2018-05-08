@@ -81,15 +81,15 @@ def get_location_metres(original_location, pos):
 
     earth_radius = 6378137.0 #Radius of "spherical" earth
     #Coordinate offsets in radians
-    dLat = pos[0]/earth_radius
-    dLon = pos[1]/(earth_radius*math.cos(math.pi*original_location[0]/180))
+    dLat = pos[0]*100/earth_radius
+    dLon = pos[1]*100/(earth_radius*math.cos(math.pi*original_location[0]/180))
 
     #New position in decimal degrees
     newlat = original_location[0] + (dLat * 180/math.pi)
     newlon = original_location[1] + (dLon * 180/math.pi)
 
-    #targetlocation=dronekit.LocationGlobal(newlat, newlon,original_location.alt)
-    targetlocation=dronekit.LocationGlobalRelative(newlat, newlon,original_location[2]+pos[2])
+    targetlocation=dronekit.LocationGlobal(newlat, newlon,original_location[2]+pos[2])
+    #targetlocation=dronekit.LocationGlobalRelative(newlat, newlon,original_location[2]+pos[2])
 
     return targetlocation;
 
@@ -97,10 +97,10 @@ if __name__ == "__main__":
 
     server_address = './uds_socket'
     '''For Raspebarry pi'''
-    pi_serial = '/dev/ttyAMA0'
+    #pi_serial = '/dev/ttyAMA0'
 
     '''For Zhongjiao's MacOS'''
-    #pi_serial = '/dev/tty.SLAB_USBtoUART'
+    pi_serial = '/dev/tty.SLAB_USBtoUART'
 
     pi_rate = 57600
 
