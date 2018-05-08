@@ -97,10 +97,10 @@ if __name__ == "__main__":
 
     server_address = './uds_socket'
     '''For Raspebarry pi'''
-    #pi_serial = '/dev/ttyAMA0'
+    pi_serial = '/dev/ttyAMA0'
 
     '''For Zhongjiao's MacOS'''
-    pi_serial = '/dev/tty.SLAB_USBtoUART'
+    #pi_serial = '/dev/tty.SLAB_USBtoUART'
 
     pi_rate = 57600
 
